@@ -96,11 +96,21 @@ def print_table(row_data, title):
 def get_header_and_jwt():
     file_path = os.path.join(os.path.dirname(__file__), "data/auth.json")
     if not os.path.exists(file_path):
-        console.print("[red][bold]Error: auth.json file not found. Please create an auth.json file in the data folder and add your JWT details.[/bold][/red]")
-        raise SystemExit()
+        console.print("[red][bold]Error: Please run `bourbon auth` before updating...[/bold][/yellow]")
+        raise SystemExit("auth.json file not found...")
     with open(file_path, "r") as f:
         auth_data = json.load(f)
     return auth_data["JWT_HEADER"], auth_data["JWT_PAYLOAD"]
+
+def set_header_and_jwt(header, payload):
+    file_path = os.path.join(os.path.dirname(__file__), "data/auth.json")
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    f = open(file_path, "w")
+    auth_data = {}
+    auth_data["JWT_HEADER"] = header
+    auth_data["JWT_PAYLOAD"] = payload
+    f.write(json.dumps(auth_data))
+    f.close()
 
 def get_external_data():
     HEADER, PAYLOAD = get_header_and_jwt()
@@ -117,7 +127,7 @@ def get_external_data():
     except Exception as e:
         raise SystemExit(e)
     if response.status_code == 401:
-        console.print("[red][bold]Error: JWT is expired or invalid. Please update the JWT in the script.")
+        console.print("[red][bold]Error: JWT is expired or invalid. Please rerun `bourbon auth`.")
         raise SystemExit(f"Status code 401: {response.text}")
     elif response.status_code != 200:
         raise SystemExit(f"Status code {response.status_code} {response.text}")

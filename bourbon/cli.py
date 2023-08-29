@@ -4,11 +4,16 @@ from typing_extensions import Annotated
 import typer
 from rich.console import Console
 import bourbon.lib as lib
+import pkg_resources
 
 
 
 
-app = typer.Typer()
+app = typer.Typer(
+    no_args_is_help=True, 
+    context_settings={"help_option_names": ["-h", "--help"]}, 
+    help=f"Welcome to the bourbon CLI v{pkg_resources.get_distribution('bourbon').version}"
+)
 console = Console()
 
 
@@ -61,6 +66,26 @@ def budget(
     sorted_data = filtered_data.sort_values(by=["Average"], ascending=False)
     lib.print_table(sorted_data, "Budget Results")
     return sorted_data
+
+
+@app.command()
+def auth(
+    header: str = typer.Option(..., help="JWT token header", prompt="JWT header"),
+    payload: str = typer.Option(..., help="JWT token payload", prompt="JWT payload")
+):
+    try:
+        lib.get_header_and_jwt()
+        console.print("[yellow][bold]Warning: auth.json file already exists...[/yellow]")
+        prompt_continue = typer.confirm("Do you want to overwrite it?")
+        if not prompt_continue:
+            raise SystemExit("Exiting...")
+    except Exception as e:
+        print(e)
+        console.print("[green]Creating auth.json file...")
+    lib.set_header_and_jwt(header, payload)
+    console.print("[green]Successfully created auth.json file...[/green]")
+    console.print("Checking if JWT is valid by updating the list...")
+    update()
 
 def cli():
     # Check if the CSV file was updated in the last 24 hours
