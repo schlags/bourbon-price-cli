@@ -96,7 +96,7 @@ def print_table(row_data, title):
 def get_header_and_jwt():
     file_path = os.path.join(os.path.dirname(__file__), "data/auth.json")
     if not os.path.exists(file_path):
-        console.print("[red][bold]Error: Please run `bourbon auth` before updating...[/bold][/yellow]")
+        console.print("[red][bold]Error: Please run `bourbon auth` before updating...[/bold][/red]")
         raise SystemExit("auth.json file not found...")
     with open(file_path, "r") as f:
         auth_data = json.load(f)
